@@ -6,20 +6,30 @@
   <meta name="theme-color" content="#17130f" />
   <title>My Cat — Cozy 3D Home</title>
   <style>
-    :root{--ink:#fffaf2;--glass:rgba(30,22,16,.34);--line:rgba(255,255,255,.16);--accent:#ffbe73}
+    :root{
+      --ink:#fffaf2;
+      --glass:rgba(30,22,16,.34);
+      --line:rgba(255,255,255,.16);
+      --accent:#ffbe73;
+    }
     *{box-sizing:border-box}
     html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#17130f;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     canvas{display:block}
     .ui{position:fixed;inset:0;pointer-events:none;color:var(--ink)}
     .brand{position:absolute;top:24px;left:28px;display:flex;align-items:center;gap:12px;padding:11px 15px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:999px;box-shadow:0 18px 50px rgba(0,0,0,.18)}
-    .paw{font-size:20px}.brand strong{font-size:14px;letter-spacing:.08em;text-transform:uppercase}
+    .paw{font-size:20px}
+    .brand strong{font-size:14px;letter-spacing:.08em;text-transform:uppercase}
     .center{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);text-align:center}
     .hint{display:inline-flex;gap:9px;align-items:center;padding:12px 16px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:999px;font-size:14px;box-shadow:0 18px 50px rgba(0,0,0,.18);transition:.25s}
     .hint.pulse{transform:scale(1.06);background:rgba(104,62,31,.48)}
     .subtitle{margin-top:10px;opacity:.66;font-size:12px}
     .bubble{position:absolute;pointer-events:none;transform:translate(-50%,-50%) scale(.7);opacity:0;padding:10px 14px;background:rgba(255,250,242,.92);color:#34281e;border-radius:18px 18px 18px 4px;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.18);transition:opacity .16s,transform .16s}
     .bubble.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-    @media (max-width:640px){.brand{top:16px;left:16px}.center{bottom:20px;width:calc(100% - 24px)}.hint{font-size:13px}}
+    @media (max-width:640px){
+      .brand{top:16px;left:16px}
+      .center{bottom:20px;width:calc(100% - 24px)}
+      .hint{font-size:13px}
+    }
   </style>
 </head>
 <body>
@@ -32,60 +42,199 @@
     </div>
     <div id="bubble" class="bubble">MEOOOW! ♡</div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.min.js"></script>
-  <script>
+
+  <script type="module">
+  import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
   (() => {
-    const app=document.getElementById('app'),hint=document.getElementById('hint'),bubble=document.getElementById('bubble');
-    const scene=new THREE.Scene();scene.background=new THREE.Color(0x211914);scene.fog=new THREE.FogExp2(0x211914,0.025);
-    const camera=new THREE.PerspectiveCamera(47,innerWidth/innerHeight,.1,100);camera.position.set(.3,2.6,7.5);
-    const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;app.appendChild(renderer.domElement);
-    scene.add(new THREE.HemisphereLight(0xffe8c9,0x30231f,1.55));
-    const sun=new THREE.DirectionalLight(0xffdfb0,2.1);sun.position.set(-4,7,5);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-7;sun.shadow.camera.right=7;sun.shadow.camera.top=7;sun.shadow.camera.bottom=-7;scene.add(sun);
-    const lamp=new THREE.PointLight(0xffa95c,13,7,2);lamp.position.set(3.3,2.4,-1.8);scene.add(lamp);
-    const mat=(c,rough=.7,metal=0)=>new THREE.MeshStandardMaterial({color:c,roughness:rough,metalness:metal});
-    const add=(geo,material,pos,rot=[0,0,0],parent=scene)=>{const m=new THREE.Mesh(geo,material);m.position.set(...pos);m.rotation.set(...rot);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m};
-    add(new THREE.BoxGeometry(12,.18,10),mat(0x6d4d35,.85),[0,-.08,0]);
-    add(new THREE.BoxGeometry(12,6,.18),mat(0xc7ad93,.95),[0,3,-4.35]);
-    add(new THREE.BoxGeometry(.18,6,10),mat(0xb8987a,.95),[-5.8,3,0]);
-    add(new THREE.CylinderGeometry(2.65,2.65,.05,64),mat(0x7b5a43,1),[0,.06,.65]);
-    add(new THREE.BoxGeometry(3.2,2.3,.13),mat(0x4e3628,.65),[-2.55,3,-4.18]);
-    add(new THREE.BoxGeometry(2.85,1.95,.08),new THREE.MeshStandardMaterial({color:0x8fc5d9,roughness:.2,emissive:0x1b3c49,emissiveIntensity:.3}),[-2.55,3,-4.08]);
-    add(new THREE.BoxGeometry(.1,2.05,.12),mat(0x5f4533),[-2.55,3,-3.98]);
-    add(new THREE.BoxGeometry(2.95,.1,.12),mat(0x5f4533),[-2.55,3,-3.98]);
-    const sofa=new THREE.Group();scene.add(sofa);
-    add(new THREE.BoxGeometry(5.1,.65,2.15),mat(0x8a654c,.96),[0,.48,.45],[0,0,0],sofa);
-    add(new THREE.BoxGeometry(5.05,1.65,.52),mat(0x7c5944,.96),[0,1.25,-.45],[-.14,0,0],sofa);
-    add(new THREE.BoxGeometry(.55,1.05,2.1),mat(0x76523f,.96),[-2.5,.9,.43],[0,0,0],sofa);
-    add(new THREE.BoxGeometry(.55,1.05,2.1),mat(0x76523f,.96),[2.5,.9,.43],[0,0,0],sofa);
-    add(new THREE.BoxGeometry(1.45,.3,1.5),mat(0xb98663,.92),[-1.15,.9,.55],[-.05,.05,.02],sofa);
-    add(new THREE.BoxGeometry(1.45,.3,1.5),mat(0xad7658,.92),[1.15,.9,.55],[-.05,-.05,-.02],sofa);
-    add(new THREE.CylinderGeometry(.65,.75,.13,32),mat(0x4d3324,.65),[3.45,.65,-.85]);
-    add(new THREE.CylinderGeometry(.1,.13,1.15,20),mat(0xa87f56,.5,.15),[3.45,1.2,-.85]);
-    add(new THREE.CylinderGeometry(.46,.7,.65,32,1,true),new THREE.MeshStandardMaterial({color:0xe8caa6,roughness:.8,side:THREE.DoubleSide,emissive:0x7a4524,emissiveIntensity:.35}),[3.45,2,-.85]);
-    add(new THREE.CylinderGeometry(.38,.48,.6,24),mat(0x9c6b45,.9),[-4.2,.35,-2.65]);
-    for(let i=0;i<11;i++){const leaf=add(new THREE.SphereGeometry(.18,18,14),mat(0x49613b,.85),[-4.2+(Math.random()-.5)*.8,1+Math.random()*1.3,-2.65+(Math.random()-.5)*.6]);leaf.scale.set(.7,1.9,.7);leaf.rotation.z=(Math.random()-.5)*1.2}
-    const cat=new THREE.Group();cat.position.set(.25,1.3,.82);cat.rotation.y=-.12;scene.add(cat);
-    const fur=mat(0xf1eee7,.88),furShadow=mat(0xd8d3c8,.92),pink=mat(0xd99993,.78),dark=mat(0x3d332f,.8);
-    const body=add(new THREE.SphereGeometry(1.05,48,32),fur,[0,0,0],[0,0,0],cat);body.scale.set(1.36,.73,.9);
-    const belly=add(new THREE.SphereGeometry(.76,40,28),furShadow,[.08,-.18,.26],[0,0,0],cat);belly.scale.set(1.25,.5,.75);
-    const head=add(new THREE.SphereGeometry(.7,48,32),fur,[-.75,.37,.08],[0,0,.12],cat);head.scale.set(1,.86,.92);
-    const earGeo=new THREE.ConeGeometry(.32,.55,4),e1=add(earGeo,fur,[-1.02,.94,.03],[0,0,-.18],cat),e2=add(earGeo,fur,[-.44,.91,.02],[0,0,.17],cat);
-    add(new THREE.ConeGeometry(.19,.34,4),pink,[-1.02,.96,.13],[0,0,-.18],cat);add(new THREE.ConeGeometry(.19,.34,4),pink,[-.44,.93,.12],[0,0,.17],cat);
-    add(new THREE.TorusGeometry(.12,.025,8,24,Math.PI),dark,[-.97,.47,.62],[Math.PI/2,0,.12],cat);add(new THREE.TorusGeometry(.12,.025,8,24,Math.PI),dark,[-.55,.49,.62],[Math.PI/2,0,.08],cat);
-    add(new THREE.SphereGeometry(.075,20,14),pink,[-.76,.35,.72],[0,0,0],cat).scale.set(1.2,.8,.7);
-    add(new THREE.SphereGeometry(.18,24,18),furShadow,[-.91,.28,.65],[0,0,0],cat).scale.set(1,.65,.6);add(new THREE.SphereGeometry(.18,24,18),furShadow,[-.61,.28,.65],[0,0,0],cat).scale.set(1,.65,.6);
-    add(new THREE.SphereGeometry(.27,28,20),fur,[-.15,-.48,.58],[0,0,0],cat).scale.set(1.25,.7,.8);add(new THREE.SphereGeometry(.27,28,20),fur,[.45,-.48,.55],[0,0,0],cat).scale.set(1.25,.7,.8);
-    const tailCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(.95,-.05,-.1),new THREE.Vector3(1.65,.12,-.1),new THREE.Vector3(1.65,.62,.05),new THREE.Vector3(1.15,.6,.12)]);add(new THREE.TubeGeometry(tailCurve,40,.22,16,false),fur,[0,0,0],[0,0,0],cat);
-    const zs=[];function makeZ(text,x,y,z,s){const canvas=document.createElement('canvas');canvas.width=128;canvas.height=128;const ctx=canvas.getContext('2d');ctx.font='bold 78px sans-serif';ctx.fillStyle='rgba(255,246,234,.9)';ctx.fillText(text,35,87);const tex=new THREE.CanvasTexture(canvas);const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));spr.position.set(x,y,z);spr.scale.set(s,s,s);scene.add(spr);zs.push(spr)}makeZ('Z',-.35,2.55,.5,.42);makeZ('Z',.05,2.92,.35,.34);makeZ('Z',.35,3.2,.25,.28);
-    const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();let targetYaw=0,targetPitch=0,yaw=0,pitch=0,zoom=7.5,dragging=false,px=0,py=0,meowBounce=0;
-    function synthMeow(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ac=synthMeow.ac||(synthMeow.ac=new AC());if(ac.state==='suspended')ac.resume();const now=ac.currentTime,osc=ac.createOscillator(),gain=ac.createGain(),filt=ac.createBiquadFilter();osc.type='sawtooth';filt.type='lowpass';filt.frequency.setValueAtTime(1500,now);osc.frequency.setValueAtTime(620,now);osc.frequency.exponentialRampToValueAtTime(850,now+.12);osc.frequency.exponentialRampToValueAtTime(540,now+.48);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.16,now+.035);gain.gain.exponentialRampToValueAtTime(.065,now+.22);gain.gain.exponentialRampToValueAtTime(.0001,now+.55);osc.connect(filt).connect(gain).connect(ac.destination);osc.start(now);osc.stop(now+.58)}
-    function isCatHit(e){const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;ray.setFromCamera(pointer,camera);return ray.intersectObjects(cat.children,true).length>0}
-    renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;px=e.clientX;py=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});
-    renderer.domElement.addEventListener('pointermove',e=>{if(dragging){targetYaw+=(e.clientX-px)*.0035;targetPitch+=(e.clientY-py)*.0025;targetPitch=Math.max(-.28,Math.min(.28,targetPitch));px=e.clientX;py=e.clientY}renderer.domElement.style.cursor=isCatHit(e)?'pointer':'grab'});
-    renderer.domElement.addEventListener('pointerup',e=>{dragging=false;if(isCatHit(e)){synthMeow();meowBounce=1;bubble.classList.add('show');hint.classList.add('pulse');hint.textContent='💛 Meow! Pet me again';setTimeout(()=>{bubble.classList.remove('show');hint.classList.remove('pulse')},700)}});
+    const app = document.getElementById('app');
+    const hint = document.getElementById('hint');
+    const bubble = document.getElementById('bubble');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x211914);
+    scene.fog = new THREE.FogExp2(0x211914, 0.025);
+
+    const camera = new THREE.PerspectiveCamera(47, innerWidth/innerHeight, .1, 100);
+    camera.position.set(0.3, 2.6, 7.5);
+
+    const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.12;
+    app.appendChild(renderer.domElement);
+
+    scene.add(new THREE.HemisphereLight(0xffe8c9, 0x30231f, 1.55));
+    const sun = new THREE.DirectionalLight(0xffdfb0, 2.1);
+    sun.position.set(-4,7,5);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048,2048);
+    sun.shadow.camera.left=-7; sun.shadow.camera.right=7; sun.shadow.camera.top=7; sun.shadow.camera.bottom=-7;
+    scene.add(sun);
+    const lamp = new THREE.PointLight(0xffa95c, 13, 7, 2);
+    lamp.position.set(3.3,2.4,-1.8);
+    scene.add(lamp);
+
+    const mat = (c, rough=.7, metal=0) => new THREE.MeshStandardMaterial({color:c, roughness:rough, metalness:metal});
+    const add = (geo, material, pos, rot=[0,0,0], parent=scene) => {
+      const m = new THREE.Mesh(geo,material);
+      m.position.set(...pos); m.rotation.set(...rot); m.castShadow=true; m.receiveShadow=true; parent.add(m); return m;
+    };
+
+    add(new THREE.BoxGeometry(12,.18,10), mat(0x6d4d35,.85), [0,-.08,0]);
+    add(new THREE.BoxGeometry(12,6,.18), mat(0xc7ad93,.95), [0,3,-4.35]);
+    add(new THREE.BoxGeometry(.18,6,10), mat(0xb8987a,.95), [-5.8,3,0]);
+    add(new THREE.CylinderGeometry(2.65,2.65,.05,64), mat(0x7b5a43,1), [0,.06,.65], [0,0,0]);
+    add(new THREE.BoxGeometry(3.2,2.3,.13), mat(0x4e3628,.65), [-2.55,3,-4.18]);
+    add(new THREE.BoxGeometry(2.85,1.95,.08), new THREE.MeshStandardMaterial({color:0x8fc5d9,roughness:.2,emissive:0x1b3c49,emissiveIntensity:.3}), [-2.55,3,-4.08]);
+    add(new THREE.BoxGeometry(.1,2.05,.12), mat(0x5f4533), [-2.55,3,-3.98]);
+    add(new THREE.BoxGeometry(2.95,.1,.12), mat(0x5f4533), [-2.55,3,-3.98]);
+
+    const sofa = new THREE.Group(); scene.add(sofa);
+    add(new THREE.BoxGeometry(5.1,.65,2.15), mat(0x8a654c,.96), [0,.48,.45],[0,0,0],sofa);
+    add(new THREE.BoxGeometry(5.05,1.65,.52), mat(0x7c5944,.96), [0,1.25,-.45],[-.14,0,0],sofa);
+    add(new THREE.BoxGeometry(.55,1.05,2.1), mat(0x76523f,.96), [-2.5,.9,.43],[0,0,0],sofa);
+    add(new THREE.BoxGeometry(.55,1.05,2.1), mat(0x76523f,.96), [2.5,.9,.43],[0,0,0],sofa);
+    add(new THREE.BoxGeometry(1.45,.3,1.5), mat(0xb98663,.92), [-1.15,.9,.55],[-.05,.05,.02],sofa);
+    add(new THREE.BoxGeometry(1.45,.3,1.5), mat(0xad7658,.92), [1.15,.9,.55],[-.05,-.05,-.02],sofa);
+
+    add(new THREE.CylinderGeometry(.65,.75,.13,32), mat(0x4d3324,.65), [3.45,.65,-.85]);
+    add(new THREE.CylinderGeometry(.1,.13,1.15,20), mat(0xa87f56,.5, .15), [3.45,1.2,-.85]);
+    add(new THREE.CylinderGeometry(.46,.7,.65,32,1,true), new THREE.MeshStandardMaterial({color:0xe8caa6,roughness:.8,side:THREE.DoubleSide,emissive:0x7a4524,emissiveIntensity:.35}), [3.45,2.0,-.85]);
+    add(new THREE.CylinderGeometry(.38,.48,.6,24), mat(0x9c6b45,.9), [-4.2,.35,-2.65]);
+    for(let i=0;i<11;i++){
+      const leaf=add(new THREE.SphereGeometry(.18,18,14), mat(0x49613b,.85), [-4.2+(Math.random()-.5)*.8,1.0+Math.random()*1.3,-2.65+(Math.random()-.5)*.6]);
+      leaf.scale.set(.7,1.9,.7); leaf.rotation.z=(Math.random()-.5)*1.2;
+    }
+
+    const cat = new THREE.Group();
+    cat.position.set(.25,1.3,.82);
+    cat.rotation.y = -.12;
+    scene.add(cat);
+    cat.userData.isCat = true;
+
+    const fur = mat(0xf1eee7,.88);
+    const furShadow = mat(0xd8d3c8,.92);
+    const pink = mat(0xd99993,.78);
+    const dark = mat(0x3d332f,.8);
+
+    const body = add(new THREE.SphereGeometry(1.05,48,32), fur, [0,0,0],[0,0,0],cat);
+    body.scale.set(1.36,.73,.9);
+    const belly = add(new THREE.SphereGeometry(.76,40,28), furShadow, [.08,-.18,.26],[0,0,0],cat);
+    belly.scale.set(1.25,.5,.75);
+
+    const head = add(new THREE.SphereGeometry(.7,48,32), fur, [-.75,.37,.08],[0,0,.12],cat);
+    head.scale.set(1.0,.86,.92);
+    const earGeo = new THREE.ConeGeometry(.32,.55,4);
+    const e1 = add(earGeo, fur, [-1.02,.94,.03],[0,0,-.18],cat);
+    const e2 = add(earGeo, fur, [-.44,.91,.02],[0,0,.17],cat);
+    add(new THREE.ConeGeometry(.19,.34,4), pink, [-1.02,.96,.13],[0,0,-.18],cat);
+    add(new THREE.ConeGeometry(.19,.34,4), pink, [-.44,.93,.12],[0,0,.17],cat);
+    add(new THREE.TorusGeometry(.12,.025,8,24,Math.PI), dark, [-.97,.47,.62],[Math.PI/2,0,.12],cat);
+    add(new THREE.TorusGeometry(.12,.025,8,24,Math.PI), dark, [-.55,.49,.62],[Math.PI/2,0,.08],cat);
+    add(new THREE.SphereGeometry(.075,20,14), pink, [-.76,.35,.72],[0,0,0],cat).scale.set(1.2,.8,.7);
+    add(new THREE.SphereGeometry(.18,24,18), furShadow, [-.91,.28,.65],[0,0,0],cat).scale.set(1,.65,.6);
+    add(new THREE.SphereGeometry(.18,24,18), furShadow, [-.61,.28,.65],[0,0,0],cat).scale.set(1,.65,.6);
+    add(new THREE.SphereGeometry(.27,28,20), fur, [-.15,-.48,.58],[0,0,0],cat).scale.set(1.25,.7,.8);
+    add(new THREE.SphereGeometry(.27,28,20), fur, [.45,-.48,.55],[0,0,0],cat).scale.set(1.25,.7,.8);
+    const tailCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(.95,-.05,-.1), new THREE.Vector3(1.65,.12,-.1),
+      new THREE.Vector3(1.65,.62,.05), new THREE.Vector3(1.15,.6,.12)
+    ]);
+    add(new THREE.TubeGeometry(tailCurve,40,.22,16,false), fur, [0,0,0],[0,0,0],cat);
+
+    const zs = [];
+    function makeZ(text, x,y,z,s){
+      const canvas=document.createElement('canvas'); canvas.width=128; canvas.height=128;
+      const ctx=canvas.getContext('2d'); ctx.clearRect(0,0,128,128);
+      ctx.font='bold 78px sans-serif'; ctx.fillStyle='rgba(255,246,234,.9)'; ctx.fillText(text,35,87);
+      const tex=new THREE.CanvasTexture(canvas);
+      const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
+      spr.position.set(x,y,z); spr.scale.set(s,s,s); scene.add(spr); zs.push(spr);
+    }
+    makeZ('Z',-.35,2.55,.5,.42); makeZ('Z',.05,2.92,.35,.34); makeZ('Z',.35,3.2,.25,.28);
+
+    const ray = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let targetYaw=0, targetPitch=0, yaw=0, pitch=0, zoom=7.5, dragging=false, px=0, py=0;
+    let meowBounce=0;
+
+    function synthMeow(){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return;
+      const ac = synthMeow.ac || (synthMeow.ac = new AC());
+      if(ac.state==='suspended') ac.resume();
+      const now=ac.currentTime, osc=ac.createOscillator(), gain=ac.createGain(), filt=ac.createBiquadFilter();
+      osc.type='sawtooth'; filt.type='lowpass'; filt.frequency.setValueAtTime(1500,now);
+      osc.frequency.setValueAtTime(620,now);
+      osc.frequency.exponentialRampToValueAtTime(850,now+.12);
+      osc.frequency.exponentialRampToValueAtTime(540,now+.48);
+      gain.gain.setValueAtTime(.0001,now);
+      gain.gain.exponentialRampToValueAtTime(.16,now+.035);
+      gain.gain.exponentialRampToValueAtTime(.065,now+.22);
+      gain.gain.exponentialRampToValueAtTime(.0001,now+.55);
+      osc.connect(filt).connect(gain).connect(ac.destination); osc.start(now); osc.stop(now+.58);
+    }
+
+    function isCatHit(e){
+      const r=renderer.domElement.getBoundingClientRect();
+      pointer.x=((e.clientX-r.left)/r.width)*2-1;
+      pointer.y=-((e.clientY-r.top)/r.height)*2+1;
+      ray.setFromCamera(pointer,camera);
+      return ray.intersectObjects(cat.children,true).length>0;
+    }
+
+    renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;px=e.clientX;py=e.clientY; renderer.domElement.setPointerCapture(e.pointerId)});
+    renderer.domElement.addEventListener('pointermove',e=>{
+      if(dragging){targetYaw+=(e.clientX-px)*.0035;targetPitch+=(e.clientY-py)*.0025;targetPitch=Math.max(-.28,Math.min(.28,targetPitch));px=e.clientX;py=e.clientY}
+      renderer.domElement.style.cursor=isCatHit(e)?'pointer':'grab';
+    });
+    renderer.domElement.addEventListener('pointerup',e=>{
+      dragging=false;
+      if(isCatHit(e)){
+        synthMeow(); meowBounce=1;
+        bubble.classList.add('show'); hint.classList.add('pulse'); hint.textContent='💛 Meow! Pet me again';
+        setTimeout(()=>{bubble.classList.remove('show');hint.classList.remove('pulse')},700);
+      }
+    });
     renderer.domElement.addEventListener('wheel',e=>{zoom+=e.deltaY*.003;zoom=Math.max(5.2,Math.min(9.4,zoom))},{passive:true});
-    function projectBubble(){const p=new THREE.Vector3(-.7,2.25,1).project(camera);bubble.style.left=((p.x+1)*.5*innerWidth)+'px';bubble.style.top=((-p.y+1)*.5*innerHeight)+'px'}
-    const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();yaw+=(targetYaw-yaw)*.055;pitch+=(targetPitch-pitch)*.055;camera.position.x=Math.sin(yaw)*zoom;camera.position.z=Math.cos(yaw)*zoom;camera.position.y=2.55+pitch*5;camera.lookAt(0,1.1,.15);const breath=1+Math.sin(t*2.05)*.025;body.scale.set(1.36*breath,.73*breath,.9*breath);belly.scale.set(1.25*breath,.5*breath,.75*breath);head.rotation.z=.12+Math.sin(t*1.55)*.012;cat.position.y=1.3+Math.sin(t*2.05)*.012;if(meowBounce>.001){meowBounce*=.88;cat.rotation.z=Math.sin(t*18)*.05*meowBounce}else cat.rotation.z*=.82;e1.rotation.z=-.18+Math.sin(t*4.3)*.018;e2.rotation.z=.17-Math.sin(t*4.1)*.018;zs.forEach((z,i)=>{z.position.y+=.0016*(i+1);z.material.opacity=.35+.4*(.5+.5*Math.sin(t*1.4+i));if(z.position.y>3.85)z.position.y=2.5+i*.28});projectBubble();renderer.render(scene,camera)}animate();
+
+    function projectBubble(){
+      const p=new THREE.Vector3(-.7,2.25,1).project(camera);
+      bubble.style.left=((p.x+1)*.5*innerWidth)+'px';
+      bubble.style.top=((-p.y+1)*.5*innerHeight)+'px';
+    }
+
+    const clock=new THREE.Clock();
+    function animate(){
+      requestAnimationFrame(animate);
+      const t=clock.getElapsedTime();
+      yaw += (targetYaw-yaw)*.055; pitch += (targetPitch-pitch)*.055;
+      camera.position.x=Math.sin(yaw)*zoom;
+      camera.position.z=Math.cos(yaw)*zoom;
+      camera.position.y=2.55 + pitch*5;
+      camera.lookAt(0,1.1,.15);
+
+      const breath=1 + Math.sin(t*2.05)*.025;
+      body.scale.set(1.36*breath,.73*breath,.9*breath);
+      belly.scale.set(1.25*breath,.5*breath,.75*breath);
+      head.rotation.z=.12 + Math.sin(t*1.55)*.012;
+      cat.position.y=1.3 + Math.sin(t*2.05)*.012;
+
+      if(meowBounce>0.001){meowBounce*=.88; cat.rotation.z=Math.sin(t*18)*.05*meowBounce;}
+      else cat.rotation.z*=.82;
+      e1.rotation.z=-.18+Math.sin(t*4.3)*.018;
+      e2.rotation.z=.17-Math.sin(t*4.1)*.018;
+
+      zs.forEach((z,i)=>{z.position.y += .0016*(i+1); z.material.opacity=.35+.4*(.5+.5*Math.sin(t*1.4+i)); if(z.position.y>3.85)z.position.y=2.5+i*.28});
+      projectBubble();
+      renderer.render(scene,camera);
+    }
+    animate();
+
     addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
   })();
   </script>
